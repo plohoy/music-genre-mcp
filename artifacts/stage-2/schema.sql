@@ -1,0 +1,4 @@
+-- Generated reference schema. Rebuild the authoritative database with:
+-- python scripts/build_db.py
+-- Schema is defined in src/music_genres/repository.py and validated with
+-- PRAGMA integrity_check / foreign_key_check.

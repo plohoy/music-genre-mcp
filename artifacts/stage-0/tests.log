@@ -1,0 +1,4 @@
+MusicBrainz `/ws/2/genre/all?limit=3`: PASS; JSON includes genre ID and name.
+Wikidata licensing/documentation: PASS.
+AcousticBrainz download metadata and MBID join path: PASS.
+FMA metadata manifest (genres.csv/tracks.csv/features.csv): PASS.

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {"id": "local-compat-v1", "title": "Hermes local generator compatibility profiles", "url": "local://hermes/mlx-media/v1", "license": "project-local", "kind": "heuristic"}
+  ],
+  "genres": [
+    {"name":"ambient","aliases":["эмбиент"],"bpm":80,"key":"D","scale":"minor","confidence":"low","descriptors":["atmospheric","spacious","slow-evolving textures","ambient pads"]},
+    {"name":"detroit techno","aliases":["детроит техно"],"bpm":140,"key":"E","scale":"minor","confidence":"medium","descriptors":["syncopated 909-style drums","machine-funk bass","evolving analog chords","soulful futurism","hypnotic arrangement"]},
+    {"name":"drum and bass","aliases":["dnb","drum & bass","drum n bass","drum'n'bass","drum and baas","драм-н-бейс","драм энд бейс","драм-энд-бейс"],"bpm":174,"key":"F","scale":"minor","confidence":"medium","descriptors":["fast broken two-step breakbeats","crisp snare backbeats","chopped break ghost notes","deep sub-bass","reese bass"]},
+    {"name":"neurofunk drum and bass","aliases":["neurofunk","нейрофанк","dnb neurofunk","drum and bass neurofunk","drum and baas neurofunk","drum n bass neurofunk"],"bpm":174,"key":"F","scale":"minor","confidence":"medium","descriptors":["rolling chopped breakbeats","aggressive modulated reese bass","mechanical edits","dark futuristic pressure","dense ghost notes"]},
+    {"name":"gabber","aliases":["габбер"],"bpm":180,"key":"F","scale":"minor","confidence":"medium","descriptors":["distorted hardcore kick","hoover synth","raw warehouse energy","clipped transients"]},
+    {"name":"grunge","aliases":["гранж"],"bpm":116,"key":"E","scale":"minor","confidence":"low","descriptors":["raw distorted guitars","live-room drums","melodic bass","quiet-loud dynamics","rough vocal"]},
+    {"name":"house","aliases":["хаус"],"bpm":124,"key":"A","scale":"minor","confidence":"low","descriptors":["four-on-the-floor kick","offbeat groove","club arrangement"]},
+    {"name":"idm","aliases":["intelligent dance music"],"bpm":105,"key":"A","scale":"minor","confidence":"low","descriptors":["intricate programmed rhythm","glitch detail","experimental electronic texture","unconventional arrangement"]},
+    {"name":"industrial techno","aliases":["индастриал техно","industrial-techno"],"bpm":138,"key":"F","scale":"minor","confidence":"low","descriptors":["dark industrial techno","relentless four-on-the-floor kick","distorted warehouse percussion","metallic impacts","grinding bass","cold machine drones","atonal analog stabs","hypnotic functional arrangement","raw underground production","no trance melody","no EDM buildup","no trap","no dubstep"]},
+    {"name":"pop","aliases":["поп"],"bpm":120,"key":"C","scale":"major","confidence":"low","descriptors":["concise melodic hooks","clear song structure","polished production"]},
+    {"name":"rock","aliases":["рок"],"bpm":120,"key":"E","scale":"minor","confidence":"low","descriptors":["electric guitars","bass","live drums","song-form dynamics"]},
+    {"name":"synthwave","aliases":["синтвейв"],"bpm":110,"key":"A","scale":"minor","confidence":"low","descriptors":["retro analog synths","gated drums","arpeggiated bass","cinematic neon atmosphere"]},
+    {"name":"techno","aliases":["техно"],"bpm":135,"key":"E","scale":"minor","confidence":"low","descriptors":["repetitive machine rhythm","four-on-the-floor kick","hypnotic synthesis","club-focused development"]},
+    {"name":"trip hop","aliases":["trip-hop","triphop","трип-хоп","трип хоп"],"bpm":80,"key":"D","scale":"minor","confidence":"low","descriptors":["1990s Bristol trip-hop","cinematic downtempo atmosphere","slow swung sampled breakbeat","deep dub-influenced bass","sparse noir guitar and electric piano","Mellotron texture","tape hiss and vinyl crackle","spacious reverb","one continuous languid groove","no rap vocals","no boom-bap","no trap","no upbeat hip-hop"]}
+  ]
+}
