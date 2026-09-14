@@ -11,6 +11,12 @@ assert resolve("трип-хоп")["canonical_name"] == "trip hop"
 assert resolve("индастриал техно")["canonical_name"] == "industrial techno"
 assert resolve("progressive house")["generation_ready"] is True
 assert build_style_prompt(["progressive house"])["key_hint"] is None
+progressive_prompt = build_style_prompt(["progressive house"])["prompt"]
+assert progressive_prompt.casefold().count("progressive house") == 1
+assert "classic underground character" in progressive_prompt
+assert "16- and 32-bar phrases" in progressive_prompt
+assert "trance" not in progressive_prompt.casefold()
+assert "deep house" not in progressive_prompt.casefold()
 assert resolve("not-a-real-genre")["status"] == "not_found"
 assert resolve("not-a-real-genre").get("bpm_hint") is None
 assert "1990s Bristol trip-hop" in build_style_prompt(["trip-hop"])["prompt"]

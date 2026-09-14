@@ -260,7 +260,12 @@ def build_style_prompt(genres: list[str], weights: list[float] | None = None, ex
     bpm = profiles[0]["bpm_hint"] if len(profiles) == 1 else None
     key = profiles[0]["key_hint"] if len(profiles) == 1 else None
     scale = profiles[0]["scale_hint"] if len(profiles) == 1 else None
-    parts = [" + ".join(names), *dict.fromkeys(tags)]
+    genre_label = " + ".join(names)
+    # A descriptor sometimes repeats the canonical genre name. Repeating it
+    # adds conditioning weight accidentally and can overpower the concrete
+    # rhythmic/arrangement evidence that follows.
+    unique_tags = [tag for tag in dict.fromkeys(tags) if normalize(tag) != normalize(genre_label)]
+    parts = [genre_label, *unique_tags]
     if bpm: parts.append(f"{bpm} BPM")
     if key and scale: parts.append(f"{key} {scale}")
     if extras.strip(): parts.append(extras.strip())
