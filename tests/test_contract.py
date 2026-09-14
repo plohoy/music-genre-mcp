@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from music_genres.repository import ensure_database, resolve, search, build_style_prompt
+from music_genres.repository import build_style_prompt, ensure_database, resolve
 
 ensure_database()
 assert resolve("drum and baas")["canonical_name"] == "drum and bass"

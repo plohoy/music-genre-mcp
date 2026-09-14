@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from music_genres.repository import connect, ensure_database
+
 ensure_database()
 with connect() as db:
     assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"

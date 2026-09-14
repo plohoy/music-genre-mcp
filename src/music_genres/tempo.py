@@ -6,7 +6,6 @@ import tempfile
 from collections.abc import Iterable
 from pathlib import Path
 
-
 PERCENTILES = ((0.10,"bpm_p10"),(0.25,"bpm_p25"),(0.50,"bpm_median"),(0.75,"bpm_p75"),(0.90,"bpm_p90"))
 
 

@@ -4,10 +4,10 @@ import hashlib
 import json
 import time
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from .repository import DEFAULT_DB, ROOT, connect, ensure_database, normalize
+from .repository import ROOT, connect, ensure_database, normalize
 
 API = "https://musicbrainz.org/ws/2/genre/all"
 USER_AGENT = "hermes-music-genres-mcp/0.2 (local genre knowledge base)"
@@ -41,7 +41,7 @@ def download_snapshot(path: Path = SNAPSHOT, delay: float = 1.05) -> dict:
             break
         if offset < total:
             time.sleep(delay)
-    snapshot = {"provider":"MusicBrainz","retrieved_at":datetime.now(timezone.utc).isoformat(),"endpoint":API,"count":len(genres),"genres":genres}
+    snapshot = {"provider":"MusicBrainz","retrieved_at":datetime.now(UTC).isoformat(),"endpoint":API,"count":len(genres),"genres":genres}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding="utf-8")
     return snapshot

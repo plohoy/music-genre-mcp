@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
+
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/'src'))
 from music_genres.profiler import extract_bpm_hint, extract_controlled_descriptors
 from music_genres.repository import build_database, connect, list_profile_requests, profile_status, resolve
