@@ -24,7 +24,41 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
     db = path or Path(os.environ.get("MUSIC_GENRES_DB", DEFAULT_DB))
     conn = sqlite3.connect(db)
     conn.row_factory = sqlite3.Row
+    ensure_runtime_schema(conn)
     return conn
+
+
+def ensure_runtime_schema(conn: sqlite3.Connection) -> None:
+    """Apply additive runtime-safe migrations to existing snapshot databases."""
+    conn.executescript("""
+      PRAGMA foreign_keys=ON;
+      CREATE TABLE IF NOT EXISTS profile_requests(
+        genre_id INTEGER PRIMARY KEY REFERENCES genres(id),
+        request_count INTEGER NOT NULL DEFAULT 1,
+        first_requested_at TEXT NOT NULL,
+        last_requested_at TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending'
+          CHECK(status IN ('pending','processing','needs_review','ready','failed')),
+        last_error TEXT
+      );
+      CREATE TABLE IF NOT EXISTS profile_candidates(
+        genre_id INTEGER PRIMARY KEY REFERENCES genres(id),
+        status TEXT NOT NULL CHECK(status IN ('draft','needs_review','approved','rejected')),
+        category_count INTEGER NOT NULL DEFAULT 0,
+        descriptor_count INTEGER NOT NULL DEFAULT 0,
+        source_id TEXT REFERENCES sources(id),
+        validation_json TEXT NOT NULL DEFAULT '{}',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS descriptor_evidence(
+        descriptor_id INTEGER NOT NULL REFERENCES descriptors(id) ON DELETE CASCADE,
+        evidence_id INTEGER NOT NULL REFERENCES evidence(id) ON DELETE CASCADE,
+        PRIMARY KEY(descriptor_id,evidence_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_profile_requests_status
+        ON profile_requests(status,last_requested_at);
+    """)
 
 
 def build_database(db_path: Path = DEFAULT_DB, seed_path: Path = DEFAULT_SEED) -> None:
@@ -98,7 +132,7 @@ def all_names(conn: sqlite3.Connection) -> list[str]:
     return [r[0] for r in conn.execute("SELECT name FROM genres UNION SELECT alias FROM aliases ORDER BY 1")]
 
 
-def resolve(query: str) -> dict:
+def resolve(query: str, *, queue_missing_profile: bool = True) -> dict:
     ensure_database()
     with connect() as conn:
         key = normalize(query)
@@ -135,6 +169,16 @@ def resolve(query: str) -> dict:
                    bpm_max_observed,sample_count,source_id,confidence
             FROM tempo_stats WHERE genre_id=? ORDER BY confidence DESC,sample_count DESC
         """, (row["id"],))]
+        if not row["generation_ready"] and queue_missing_profile:
+            now = datetime.now(timezone.utc).isoformat()
+            conn.execute("""INSERT INTO profile_requests(genre_id,request_count,first_requested_at,last_requested_at,status)
+              VALUES(?,1,?,?,'pending')
+              ON CONFLICT(genre_id) DO UPDATE SET
+                request_count=profile_requests.request_count+1,
+                last_requested_at=excluded.last_requested_at,
+                status=CASE WHEN profile_requests.status IN ('ready','processing') THEN profile_requests.status ELSE 'pending' END""",
+              (row["id"],now,now))
+            conn.commit()
         return {
             "status":"ok", "query":query, "canonical_name":row["name"],
             "generation_ready":bool(row["generation_ready"]),
@@ -145,6 +189,31 @@ def resolve(query: str) -> dict:
             "confidence":row["profile_confidence"] or row["genre_confidence"],
             "source":{"id":row["source_id"],"url":row["source_url"]},
         }
+
+
+def profile_status(name: str) -> dict:
+    profile = resolve(name, queue_missing_profile=False)
+    if profile["status"] != "ok":
+        return profile
+    with connect() as conn:
+        row = conn.execute("""SELECT pr.request_count,pr.status,pr.first_requested_at,
+          pr.last_requested_at,pr.last_error,pc.category_count,pc.descriptor_count,
+          pc.validation_json FROM genres g
+          LEFT JOIN profile_requests pr ON pr.genre_id=g.id
+          LEFT JOIN profile_candidates pc ON pc.genre_id=g.id
+          WHERE g.normalized_name=?""", (normalize(profile["canonical_name"]),)).fetchone()
+    return {"status":"ok","genre":profile["canonical_name"],"generation_ready":profile["generation_ready"],"profiling":dict(row) if row else None}
+
+
+def list_profile_requests(limit: int = 50) -> dict:
+    ensure_database()
+    with connect() as conn:
+        rows = [dict(r) for r in conn.execute("""SELECT g.name genre,pr.request_count,
+          pr.status,pr.first_requested_at,pr.last_requested_at,pr.last_error
+          FROM profile_requests pr JOIN genres g ON g.id=pr.genre_id
+          WHERE pr.status!='ready' ORDER BY pr.request_count DESC,pr.last_requested_at DESC LIMIT ?""",
+          (max(1,min(limit,500)),))]
+    return {"status":"ok","requests":rows}
 
 
 def related(name: str, limit: int = 10) -> dict:

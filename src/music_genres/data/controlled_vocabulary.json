@@ -1,0 +1,57 @@
+{
+  "rhythm": {
+    "four-on-the-floor": ["four-on-the-floor", "four on the floor"],
+    "breakbeat rhythm": ["breakbeat", "broken beat"],
+    "syncopated rhythm": ["syncopation", "syncopated"],
+    "swing rhythm": ["swing rhythm", "swing feel", "swung rhythm"],
+    "polyrhythmic rhythm": ["polyrhythm", "polyrhythmic"]
+  },
+  "harmony": {
+    "blue notes": ["blue notes", "blue note"],
+    "modal harmony": ["modal harmony", "musical modes"],
+    "chromatic harmony": ["chromatic harmony", "chromaticism"],
+    "extended chords": ["extended chords", "seventh chords", "ninth chords"]
+  },
+  "instrumentation": {
+    "synthesizers": ["synthesizer", "synthesisers"],
+    "drum machines": ["drum machine"],
+    "electric guitar": ["electric guitar"],
+    "acoustic guitar": ["acoustic guitar"],
+    "piano": ["piano"],
+    "brass instruments": ["trumpet", "trombone", "brass instrument"],
+    "saxophone": ["saxophone"],
+    "double bass": ["double bass", "upright bass"]
+  },
+  "sound_design": {
+    "sampling": ["sampling", "sample-based"],
+    "distortion": ["distortion", "distorted"],
+    "electronic synthesis": ["electronic sound", "electronic music", "synthesized"]
+  },
+  "production": {
+    "dub production techniques": ["dub production", "dub techniques"],
+    "lo-fi production": ["lo-fi", "low fidelity"],
+    "studio effects": ["studio effects", "audio effects"]
+  },
+  "arrangement": {
+    "improvisation": ["improvisation", "improvised"],
+    "gradual development": ["gradual development", "gradually evolves", "progressive structure"],
+    "repetitive structure": ["repetitive structure", "repetitive rhythms"],
+    "extended form": ["extended composition", "extended form", "long-form"]
+  },
+  "vocals": {
+    "instrumental or vocal forms": ["instrumental and vocal", "vocal and instrumental"],
+    "rap vocals": ["rapping", "rap vocals"],
+    "sung vocals": ["singing", "sung vocals"]
+  },
+  "mood": {
+    "atmospheric": ["atmospheric"],
+    "dark": ["dark atmosphere", "dark sound"],
+    "melancholic": ["melancholic", "melancholy"],
+    "energetic": ["energetic", "high-energy"]
+  },
+  "texture": {
+    "dense texture": ["dense texture", "wall of sound"],
+    "sparse texture": ["sparse texture", "minimal texture"],
+    "layered texture": ["layered texture", "layered sound"]
+  }
+}

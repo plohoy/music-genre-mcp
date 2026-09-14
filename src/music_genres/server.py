@@ -1,5 +1,13 @@
 from mcp.server.fastmcp import FastMCP
-from .repository import build_style_prompt, ensure_database, related, resolve, search
+from .repository import (
+    build_style_prompt,
+    ensure_database,
+    list_profile_requests as repository_list_profile_requests,
+    profile_status,
+    related,
+    resolve,
+    search,
+)
 
 mcp = FastMCP("music-genres", instructions="Resolve genres from the local evidence-backed database. Never invent an unknown genre or default profile.")
 
@@ -37,6 +45,16 @@ def mix_genres(genres: list[str], weights: list[float] | None = None) -> dict:
 def build_generator_style_prompt(genres: list[str], weights: list[float] | None = None, extras: str = "") -> dict:
     """Build a deterministic YuE2 style prompt from resolved local profiles."""
     return build_style_prompt(genres, weights, extras)
+
+@mcp.tool()
+def get_generator_profile_status(name: str) -> dict:
+    """Show whether a known genre is ready, queued, processing, or awaiting review."""
+    return profile_status(name)
+
+@mcp.tool()
+def list_generator_profile_requests(limit: int = 50) -> dict:
+    """List popular unresolved generator-profile requests for offline enrichment."""
+    return repository_list_profile_requests(limit)
 
 def main() -> None:
     ensure_database()

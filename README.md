@@ -225,6 +225,41 @@ python scripts/validate_db.py
 The runtime server never contacts external services. Network access is needed
 only when refreshing build-time snapshots.
 
+## Lazy generator profiles
+
+The catalogue can recognize far more genres than it can safely condition a
+generator with. A lookup of a known genre without a reviewed generator profile
+therefore returns `unsupported_for_generation` and atomically records demand in
+`profile_requests`; it never falls back to a generic genre.
+
+Inspect demand and status without network access:
+
+```bash
+music-genres profile-requests --limit 20
+music-genres profile-status jazz
+```
+
+An administrator can enrich one requested genre, or a bounded demand-ordered
+batch:
+
+```bash
+python scripts/enrich_profile.py jazz --review-only
+python scripts/enrich_profile.py jazz
+python scripts/enrich_pending.py --limit 10
+```
+
+Enrichment resolves an exact Wikidata entity, retrieves its English Wikipedia
+article as attributed evidence, and extracts only descriptors from the checked-in
+controlled vocabulary. A candidate is promoted only when validation finds at
+least three supported descriptors spanning at least two categories. Explicit BPM
+ranges are preserved; BPM, key, and scale remain unset when the evidence does not
+state them. Ambiguous or thin evidence is stored as `needs_review`.
+
+The MCP exposes `get_generator_profile_status` and
+`list_generator_profile_requests`. Network enrichment is deliberately excluded
+from the runtime MCP surface so an ordinary model call cannot mutate the genre
+knowledge base from arbitrary web content.
+
 ## License
 
 Project code is MIT licensed. Imported data keeps its original licence and
