@@ -13,6 +13,27 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "data" / "music_genres.db"
 DEFAULT_SEED = Path(__file__).with_name("data") / "seed_profiles.json"
 
+# Compact generator-specific completion data.  The evidence database remains
+# the authority for genre resolution; these phrases only make already-approved
+# YuE2 profiles operationally complete and keep neighbouring genres apart.
+GENERATOR_PROMPT_COMPLEMENTS: dict[str, dict[str, list[str]]] = {
+    "ambient": {"positive": ["beatless or very sparse pulse", "deep drone bass", "soft synthesizer pads", "minimal modal melody", "long-form gradual evolution", "wide diffuse production"], "negative": ["no dance beat", "no pop chorus", "no trap", "no dubstep"]},
+    "detroit techno": {"positive": ["four-on-the-floor machine groove", "elastic synth bass", "909 drums and futuristic chord stabs", "soulful minor-key motif", "long hypnotic club progression", "raw analog production"], "negative": ["no trance supersaws", "no EDM drop", "no trap", "no dubstep"]},
+    "drum and bass": {"positive": ["174 BPM broken two-step groove", "deep sub-bass movement", "chopped breakbeats and reese bass", "short tense motifs", "continuous DJ-friendly progression", "tight punchy club mix"], "negative": ["no four-on-the-floor techno", "no halftime trap", "no house groove", "no synth-pop"]},
+    "neurofunk drum and bass": {"positive": ["rolling two-step breakbeat", "heavily modulated reese bass", "precise mechanical drums and dark synths", "atonal threatening motifs", "continuous tension-and-release arrangement", "dense surgical production"], "negative": ["no pop melody", "no four-on-the-floor techno", "no halftime trap", "no liquid drum and bass"]},
+    "gabber": {"positive": ["relentless four-on-the-floor hardcore rhythm", "distorted kick-bass foundation", "hoover synth and rave stabs", "minimal aggressive motif", "short escalating rave structure", "clipped raw warehouse production"], "negative": ["no trap", "no dubstep", "no pop chorus", "no soft house groove"]},
+    "grunge": {"positive": ["loose live backbeat", "overdriven bass guitar", "distorted electric guitars and live drums", "abrasive minor-key vocal melody", "quiet-loud song dynamics", "raw unpolished room sound"], "negative": ["no metal virtuosity", "no pop polish", "no electronic dance beat", "no trap"]},
+    "house": {"positive": ["steady four-on-the-floor groove", "warm rounded bassline", "drum machine, piano and organ stabs", "simple soulful hook", "DJ-friendly verse-and-break progression", "clean club production"], "negative": ["no trance buildup", "no techno aggression", "no trap", "no dubstep"]},
+    "idm": {"positive": ["intricate asymmetric programmed rhythm", "controlled sub-bass", "granular synthesis and microscopic percussion", "fragmented modal motif", "non-repeating evolving arrangement", "detailed experimental production"], "negative": ["no pop chorus", "no straightforward house groove", "no trap", "no EDM drop"]},
+    "industrial techno": {"positive": ["relentless four-on-the-floor rhythm", "grinding distorted bass", "metallic percussion and machine drones", "atonal minimal motif", "hypnotic functional warehouse arrangement", "raw saturated production"], "negative": ["no trance melody", "no EDM buildup", "no trap", "no dubstep"]},
+    "pop": {"positive": ["tight accessible groove", "supportive melodic bass", "polished drums, keys and layered synths", "immediate singable hook", "concise verse-pre-chorus-chorus structure", "bright radio-ready production"], "negative": ["no abrasive noise", "no extended club intro", "no atonal melody", "no extreme metal"]},
+    "progressive house": {"positive": ["steady four-on-the-floor house groove", "rolling restrained bassline", "subtle evolving synth layers and understated percussion", "sparse modal motif with slow harmonic movement", "continuous development across 16- and 32-bar phrases", "deep spacious underground club production"], "negative": ["no trance supersaws", "no festival EDM drop", "no deep-house vocal loop", "no trip-hop breakbeat"]},
+    "rock": {"positive": ["driving live backbeat", "electric bass guitar", "electric guitars and acoustic drums", "strong riff-led melody", "verse-chorus dynamics", "natural band production"], "negative": ["no electronic dance beat", "no trap", "no orchestral score", "no synth-pop"]},
+    "synthwave": {"positive": ["steady retro drum-machine groove", "arpeggiated analog bass", "gated drums and vintage synthesizers", "nostalgic minor-key lead motif", "cinematic intro-build-climax structure", "wide saturated 1980s production"], "negative": ["no trap", "no dubstep", "no acoustic folk", "no modern EDM drop"]},
+    "techno": {"positive": ["repetitive four-on-the-floor machine rhythm", "functional rolling bass", "drum machines and hypnotic synthesizers", "minimal atonal motif", "continuous DJ-friendly development", "dry focused club production"], "negative": ["no pop chorus", "no trance supersaws", "no trap", "no dubstep"]},
+    "trip hop": {"positive": ["slow swung sampled breakbeat", "deep dub-influenced bass", "noir guitar, electric piano and Mellotron", "sparse melancholic motif", "one continuous languid progression", "dusty cinematic production"], "negative": ["no rap vocals", "no boom-bap", "no trap", "no upbeat hip-hop"]},
+}
+
 
 def normalize(value: str) -> str:
     value = unicodedata.normalize("NFKC", value).casefold().strip()
@@ -257,14 +278,25 @@ def build_style_prompt(genres: list[str], weights: list[float] | None = None, ex
     tags = []
     for p in profiles:
         tags.extend(p["descriptors"])
-    bpm = profiles[0]["bpm_hint"] if len(profiles) == 1 else None
-    key = profiles[0]["key_hint"] if len(profiles) == 1 else None
-    scale = profiles[0]["scale_hint"] if len(profiles) == 1 else None
-    genre_label = " + ".join(names)
+        completion = GENERATOR_PROMPT_COMPLEMENTS.get(p["canonical_name"], {})
+        tags.extend(completion.get("positive", []))
+        tags.extend(completion.get("negative", []))
+    effective_weights = weights or [1.0] * len(profiles)
+    if any(weight < 0 for weight in effective_weights) or not any(effective_weights):
+        return {"status":"error","error":"weights must be non-negative and not all zero"}
+    tempo_pairs = [(p["bpm_hint"], weight) for p, weight in zip(profiles, effective_weights) if p["bpm_hint"]]
+    bpm = round(sum(value * weight for value, weight in tempo_pairs) / sum(weight for _, weight in tempo_pairs)) if tempo_pairs else None
+    dominant_index = max(range(len(profiles)), key=lambda index: effective_weights[index])
+    key = profiles[dominant_index]["key_hint"] or next((p["key_hint"] for p in profiles if p["key_hint"]), "D")
+    scale = profiles[dominant_index]["scale_hint"] or next((p["scale_hint"] for p in profiles if p["scale_hint"]), "minor")
+    genre_label = " + ".join(
+        f"{name} ({round(weight / sum(effective_weights) * 100)}%)" if weights else name
+        for name, weight in zip(names, effective_weights)
+    )
     # A descriptor sometimes repeats the canonical genre name. Repeating it
     # adds conditioning weight accidentally and can overpower the concrete
     # rhythmic/arrangement evidence that follows.
-    unique_tags = [tag for tag in dict.fromkeys(tags) if normalize(tag) != normalize(genre_label)]
+    unique_tags = [tag for tag in dict.fromkeys(tags) if normalize(tag) not in {normalize(name) for name in names}]
     parts = [genre_label, *unique_tags]
     if bpm: parts.append(f"{bpm} BPM")
     if key and scale: parts.append(f"{key} {scale}")

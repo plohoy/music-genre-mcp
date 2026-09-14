@@ -10,18 +10,23 @@ assert resolve("drum and baas")["canonical_name"] == "drum and bass"
 assert resolve("трип-хоп")["canonical_name"] == "trip hop"
 assert resolve("индастриал техно")["canonical_name"] == "industrial techno"
 assert resolve("progressive house")["generation_ready"] is True
-assert build_style_prompt(["progressive house"])["key_hint"] is None
+assert build_style_prompt(["progressive house"])["bpm_hint"] == 125
+assert build_style_prompt(["progressive house"])["key_hint"] == "D"
 progressive_prompt = build_style_prompt(["progressive house"])["prompt"]
 assert progressive_prompt.casefold().count("progressive house") == 1
 assert "classic underground character" in progressive_prompt
 assert "16- and 32-bar phrases" in progressive_prompt
-assert "trance" not in progressive_prompt.casefold()
-assert "deep house" not in progressive_prompt.casefold()
+assert "no trance supersaws" in progressive_prompt.casefold()
+assert "no deep-house vocal loop" in progressive_prompt.casefold()
 assert resolve("not-a-real-genre")["status"] == "not_found"
 assert resolve("not-a-real-genre").get("bpm_hint") is None
 assert "1990s Bristol trip-hop" in build_style_prompt(["trip-hop"])["prompt"]
 assert "no boom-bap" in build_style_prompt(["trip-hop"])["prompt"]
 blend = build_style_prompt(["IDM", "ambient"], [0.6, 0.4])
-assert blend["status"] == "ok" and blend["bpm_hint"] is None
+assert blend["status"] == "ok" and blend["bpm_hint"] == 95
+assert blend["key_hint"] == "A" and blend["scale_hint"] == "minor"
+assert "95 BPM" in blend["prompt"] and "A minor" in blend["prompt"]
+assert "idm (60%) + ambient (40%)" in blend["prompt"]
+assert build_style_prompt(["IDM", "ambient"], [0, 0])["status"] == "error"
 assert build_style_prompt(["IDM", "invented-core"])["status"] == "not_found"
 print("ok")

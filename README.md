@@ -122,6 +122,13 @@ F minor
 6. Never append an LLM-written reinterpretation after the resolved prompt; it
    can overpower the intended genre.
 
+For approved local profiles, the prompt builder also supplies generator-facing
+rhythm, bass, instrumentation, melodic language, arrangement, production,
+tempo, key and neighbouring-genre exclusions. Weighted blends retain the
+requested proportions, use their weighted-average BPM, and inherit the key of
+the dominant component. This completion happens only after successful genre
+resolution; unknown genres never receive a generic fallback profile.
+
 ### YuE2
 
 ```python
