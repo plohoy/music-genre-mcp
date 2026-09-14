@@ -70,12 +70,19 @@ def build_database(db_path: Path = DEFAULT_DB, seed_path: Path = DEFAULT_SEED) -
                 "INSERT OR IGNORE INTO aliases(alias,normalized_alias,genre_id,source_id,confidence) VALUES(?,?,?,?,?)",
                 (alias, normalize(alias), genre_id, source_id, 0.7),
             )
+        descriptor_source_id = item.get("descriptor_source_id", source_id)
+        profile_source_id = item.get("profile_source_id", source_id)
         for value in item.get("descriptors", []):
             conn.execute(
                 "INSERT INTO descriptors(genre_id,category,value,normalized_value,source_id,confidence) VALUES(?,?,?,?,?,?)",
-                (genre_id, "production", value, normalize(value), source_id, 0.6 if item["confidence"] == "medium" else 0.4),
+                (genre_id, "production", value, normalize(value), descriptor_source_id, 0.6 if item["confidence"] == "medium" else 0.4),
             )
-        conn.execute("INSERT INTO generator_profiles VALUES(?,?,?,?,?,?,?)", (genre_id,"yue2",item.get("bpm"),item.get("key"),item.get("scale"),source_id,item["confidence"]))
+        for evidence in item.get("evidence", []):
+            conn.execute(
+                "INSERT INTO evidence(genre_id,source_id,evidence_type,text,structured_json,confidence) VALUES(?,?,?,?,?,?)",
+                (genre_id, evidence.get("source_id", descriptor_source_id), evidence.get("type", "genre description"), evidence.get("text"), json.dumps(evidence.get("structured", {})), evidence.get("confidence", 0.7)),
+            )
+        conn.execute("INSERT INTO generator_profiles VALUES(?,?,?,?,?,?,?)", (genre_id,"yue2",item.get("bpm"),item.get("key"),item.get("scale"),profile_source_id,item["confidence"]))
     conn.commit()
     conn.close()
 
