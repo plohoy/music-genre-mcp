@@ -1,12 +1,15 @@
 from mcp.server.fastmcp import FastMCP
+
 from .repository import (
     build_style_prompt,
     ensure_database,
-    list_profile_requests as repository_list_profile_requests,
     profile_status,
     related,
     resolve,
     search,
+)
+from .repository import (
+    list_profile_requests as repository_list_profile_requests,
 )
 
 mcp = FastMCP("music-genres", instructions="Resolve genres from the local evidence-backed database. Never invent an unknown genre or default profile.")

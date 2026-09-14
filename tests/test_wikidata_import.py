@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
+
 ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/'src'))
 from music_genres.import_wikidata import exact_candidate, is_musical_description
+
 assert is_musical_description('genre of electronic music')
 assert not is_musical_description('1993 studio album by Moby')
 

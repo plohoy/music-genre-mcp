@@ -9,7 +9,6 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from music_genres.profiler import enrich_genre
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument("genre")
 parser.add_argument("--review-only", action="store_true")

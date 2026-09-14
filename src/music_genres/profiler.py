@@ -7,11 +7,12 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from .import_wikidata import API as WIKIDATA_API, USER_AGENT, exact_candidate
-from .repository import DEFAULT_DB, connect, ensure_database, normalize
+from .import_wikidata import API as WIKIDATA_API
+from .import_wikidata import USER_AGENT, exact_candidate
+from .repository import connect, ensure_database, normalize
 
 VOCAB_PATH = Path(__file__).with_name("data") / "controlled_vocabulary.json"
 WIKIPEDIA_API = "https://en.wikipedia.org/w/api.php"
@@ -80,7 +81,7 @@ def wikipedia_evidence(qid: str) -> dict:
 
 def enrich_genre(name: str, *, auto_approve: bool = True) -> dict:
     ensure_database()
-    now=datetime.now(timezone.utc).isoformat()
+    now=datetime.now(UTC).isoformat()
     with connect() as conn:
         genre=conn.execute("SELECT id,name,wikidata_id FROM genres WHERE normalized_name=?",(normalize(name),)).fetchone()
         if not genre: return {"status":"not_found","genre":name}

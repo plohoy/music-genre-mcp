@@ -6,7 +6,7 @@ import os
 import re
 import sqlite3
 import unicodedata
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -105,7 +105,7 @@ def build_database(db_path: Path = DEFAULT_DB, seed_path: Path = DEFAULT_SEED) -
       CREATE INDEX idx_relation_related ON relations(related_genre_id);
     """)
     conn.execute("INSERT INTO metadata VALUES('schema_version',?)", (str(data["schema_version"]),))
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     for source in data["sources"]:
         conn.execute(
             "INSERT INTO sources(id,provider,source_type,url,license,retrieved_at,metadata_json) VALUES(?,?,?,?,?,?,?)",
@@ -191,7 +191,7 @@ def resolve(query: str, *, queue_missing_profile: bool = True) -> dict:
             FROM tempo_stats WHERE genre_id=? ORDER BY confidence DESC,sample_count DESC
         """, (row["id"],))]
         if not row["generation_ready"] and queue_missing_profile:
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(UTC).isoformat()
             conn.execute("""INSERT INTO profile_requests(genre_id,request_count,first_requested_at,last_requested_at,status)
               VALUES(?,1,?,?,'pending')
               ON CONFLICT(genre_id) DO UPDATE SET

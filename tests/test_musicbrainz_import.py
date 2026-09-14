@@ -7,8 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from music_genres.repository import build_database, connect
 from music_genres.import_musicbrainz import import_snapshot
+from music_genres.repository import build_database, connect
 
 with tempfile.TemporaryDirectory() as temp:
     temp = Path(temp)
@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory() as temp:
     with connect() as conn:
         assert conn.execute("SELECT musicbrainz_id FROM genres WHERE normalized_name='ambient'").fetchone()[0] == "mb-ambient"
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
-    from music_genres.repository import resolve, build_style_prompt
+    from music_genres.repository import build_style_prompt, resolve
     assert resolve("jazz")["generation_ready"] is False
     assert build_style_prompt(["jazz"])["status"] == "unsupported_for_generation"
 print("ok")

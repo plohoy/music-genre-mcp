@@ -3,10 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .repository import ROOT, connect, ensure_database, normalize
@@ -86,7 +86,7 @@ def download_snapshot(path: Path = SNAPSHOT, delay: float = 1.1) -> dict:
     entities = {}
     if ids:
         entities = fetch({"action":"wbgetentities","ids":"|".join(ids),"props":"labels|aliases|descriptions|claims","languages":"en|ru"}).get("entities", {})
-    snapshot = {"provider":"Wikidata","retrieved_at":datetime.now(timezone.utc).isoformat(),"endpoint":API,"mappings":mappings,"entities":entities}
+    snapshot = {"provider":"Wikidata","retrieved_at":datetime.now(UTC).isoformat(),"endpoint":API,"mappings":mappings,"entities":entities}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(snapshot,ensure_ascii=False,indent=2),encoding="utf-8")
     return snapshot
